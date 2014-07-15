@@ -1,6 +1,6 @@
 
-localhost = '127.0.0.1:8000';
-//localhost = 'spoilbait.csail.mit.edu';
+//localhost = '127.0.0.1:8000';
+localhost = 'spoilbait.csail.mit.edu';
 
 var articles;
 var index_articles = [];

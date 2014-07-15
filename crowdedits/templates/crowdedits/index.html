@@ -21,9 +21,10 @@
     <body>
     	<div class="container-narrow">
 			<div id="title">
-				<h1>SpoilBait</h1>
+				<h1>Baitless</h1>
 				<P>
 					<h4>Unite against clickbait titles!</h4>
+				<a href="about.html">About this site</a> | <a href="https://github.com/amyxzhang/baitless">Code on GitHub</a>
 				</P>
 			</div>
 			<div class="row-fluid">
@@ -45,10 +46,10 @@
 			</div>
 			<div id="rss-info" class="alert alert-info">
 				<a href="#" class="close" data-dismiss="alert">&times;</a>
-				Want some examples of RSS feeds to plug in? These ones could use your help!<BR />
-				<a href='' onclick="return submit_feed('http://feeds.feedburner.com/upworthy?format=xml');">Upworthy.com RSS Feed</a><BR />
-				<a href='' onclick="return submit_feed('http://www.buzzfeed.com/index.xml');">Buzzfeed.com Main RSS Feed</a><BR />
-				
+				Want some examples of RSS feeds to plug in? These popular ones could use your help!<BR />
+				{% for feed in top_feeds %}	
+    				<a href='' onclick="return submit_feed('{{ feed.url }}');">{{ feed.url }}</a> has {{ feed.num_titles }} fixed titles<BR />
+    				{% endfor %}
 				
 			</div>
 			

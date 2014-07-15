@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.db.models import Count
 import urllib2
 import feedparser
 import datetime
@@ -15,12 +16,27 @@ import urllib
 
 
 def get_redirects(url):
-    r = requests.head(url, allow_redirects = True)
-    return r.url
+    #redirects are super slow...hack to fix for feedproxy (specifically upworthy, find others as we go
+    if 'http://feedproxy.google.com' in url:
+        vals = url.split('/')
+        domain = vals[4]
+        field = vals[7]
+        url = 'http://www.%s.com/%s' % (domain, field)
+#     else:
+#         r = requests.head(url, allow_redirects = True)
+#         url = r.url
+    return url
 
 @ensure_csrf_cookie
 def index(request):
-    return render(request, 'crowdedits/index.html')
+    top_feeds = RSSFeed.objects.annotate(num_titles=Count('article__crowdtitle')).order_by('-num_titles')[:5]
+    dic = {'top_feeds': top_feeds}
+    
+    return render(request, 'crowdedits/index.html', dic)
+
+@ensure_csrf_cookie
+def about(request):
+    return render(request, 'crowdedits/about.html')
 
 @ensure_csrf_cookie
 def feed_page(request):

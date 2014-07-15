@@ -3,6 +3,7 @@ import views
 
 urlpatterns = patterns('',
    url(r'^$', views.index, name='index'),
+   url(r'^about', 'crowdedits.views.about'),
    url(r'^page$', 'crowdedits.views.feed_page'),
    url(r'^feeds$', 'crowdedits.views.feed'),
    url(r'^crowd_data$', 'crowdedits.views.get_crowd_data'),
