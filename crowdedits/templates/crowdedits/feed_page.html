@@ -1,0 +1,70 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title id="page_title"> SpoilBait </title>
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/page_style.css' %}" />
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap.css' %}" />
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap-responsive.css' %}" />
+	
+		
+		<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="{% static 'crowdedits/js/jquery.cookie.js' %}"></script>
+    
+
+    </head>
+
+    <body>
+    	<div id="header">
+    		<table>
+    			<tr>
+    				
+    			<td width="400">
+	    		<span class="title"><a href="http://spoilbait.csail.mit.edu">SpoilBait</a></span><BR/>
+		    	<div class="input-append">
+					<input type="text" id="submit-title" class="input-block-level" placeholder="Submit a SpoilBait title for this page">
+					<button class="btn btn-primary" type="submit" id="submit-title-but">Submit</button>
+				</div>
+    		</td>
+    		<td width="500">
+    			<span class="txterror" id="spoilheader">{{ header }}</span>
+    			<div id="titles">
+    				{% for title in crowdtitles %}	
+    				 <span id="title{{ forloop.counter0 }}">
+    				<span id="crowdtitle{{ forloop.counter0 }}">
+    				{{ title.crowdtitle }}
+    				</span>&nbsp;&nbsp;
+    				<a class="upvote" onClick="upvote('{{ title.escaped_crowdtitle }}','{{ forloop.counter0 }}');">
+    				<img width=10 height=10 src="http://i.imgur.com/YtoI3.jpg"></a>&nbsp;&nbsp;
+    				<span id="upvotes{{ forloop.counter0 }}">
+    				{{ title.votes }}
+    				</span>
+    				</span>
+    				<BR />
+    				{% endfor %}
+    			</span>
+    		</td>
+    		<td>
+    			<a href="http://spoilbait.csail.mit.edu">Get your own Spoilbait Feed</a>
+				<BR />
+    			<a href="{{ url }}">Close SpoilBait banner and go to article</a>
+    			
+    		</td>
+    		</tr>
+    		</table>
+
+    		
+    	</div>
+	    	
+		<div>
+			<iframe src="{{ url }}" frameborder="0" allowfullscreen>Feed</iframe>
+			
+		</div>
+		<input type="hidden" id="urlinput" value="{{ url }}" readonly>
+
+    </body>
+    <script type="text/javascript" src="{% static 'crowdedits/js/feedpage.js' %}"></script>
+
+</html>

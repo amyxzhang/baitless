@@ -1,0 +1,98 @@
+a {
+	color: green;
+}
+
+#title {
+	text-align: center;
+}
+
+.container-narrow {
+	margin: 0 auto;
+	max-width: 700px;
+}
+
+.image-left {
+	float: left;
+	margin-right: 20px;
+	width: 200px;
+	height: 100px;
+	padding-bottom: 20px;
+	display: table-cell;
+}
+
+.right-text {
+	max-width: 900px;
+	color: #333333;
+	line-height: 17px;
+	font-size: 12px;
+	padding-bottom: 20px;
+	display: table-cell;
+}
+
+.rss-new-title {
+	font-size: 16px;
+}
+
+.txterror {
+	color: orange;
+	font-size: 14px;
+}
+
+.fix-text .btn2 {
+	margin-bottom: 20px;
+}
+
+#submit-title {
+	height: 30px;
+	width: 400px;
+	vertical-align: middle;
+}
+
+#submit-title-but {
+	vertical-align: middle;
+}
+
+.rss-new-title-strikeout {
+	text-decoration: line-through;
+	font-size: 16px;
+}
+
+.rss-new-title-strikeout:hover {
+	text-decoration: line-through;
+	font-size: 16px;
+}
+
+.txtbright {
+	color: #009900;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.crowdtitles {
+	font-size: 14px;
+}
+
+.upvote {
+	cursor: pointer;
+}
+
+.spinner {
+  display: inline-block;
+  opacity: 0;
+  width: 0;
+}
+
+.has-spinner.active {
+  cursor:progress;
+}
+
+.has-spinner.active .spinner {
+  opacity: 1;
+  width: auto; /* This doesn't work, just fix for unkown width elements */
+}
+
+
+.has-spinner.btn.active .spinner {
+    width: 16px;
+}
+

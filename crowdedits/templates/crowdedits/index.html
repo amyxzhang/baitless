@@ -1,0 +1,95 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title id="page_title"> SpoilBait </title>
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/style.css' %}" />
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap.css' %}" />
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap-responsive.css' %}" />
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+		
+		<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="{% static 'crowdedits/js/jquery.cookie.js' %}"></script>
+    	<script src="{% static 'crowdedits/js/jquery.rss.js' %}"></script>
+    	<script src="{% static 'crowdedits/js/bootstrap.js' %}"></script>
+    
+
+    </head>
+
+    <body>
+    	<div class="container-narrow">
+			<div id="title">
+				<h1>SpoilBait</h1>
+				<P>
+					<h4>Unite against clickbait titles!</h4>
+				</P>
+			</div>
+			<div class="row-fluid">
+				Choose any RSS feed of your choice and enter its URL below. 
+				Receive a link to a new RSS feed 
+				with new titles that actually clearly reflect the content of the link and "spoil the bait"!
+				In return, help yourself and others out by suggesting better titles for your favorite feeds and upvoting the best.
+				<P>
+					<form id="formfilters" class="form-horizontal">
+						<div class="input-append">
+							<input type="text" id="rss-feed-url" class="input-block-level" placeholder="Paste link to RSS feed here">
+							<button class="btn btn-primary has-spinner" type="submit" id="submit-rss-url">
+								<span class="spinner"><i class="fa fa-refresh fa-spin"></i></span>
+								Submit
+								</button>
+						</div>
+					</form>
+				</P>
+			</div>
+			<div id="rss-info" class="alert alert-info">
+				<a href="#" class="close" data-dismiss="alert">&times;</a>
+				Want some examples of RSS feeds to plug in? These ones could use your help!<BR />
+				<a href='' onclick="return submit_feed('http://feeds.feedburner.com/upworthy?format=xml');">Upworthy.com RSS Feed</a><BR />
+				<a href='' onclick="return submit_feed('http://www.buzzfeed.com/index.xml');">Buzzfeed.com Main RSS Feed</a><BR />
+				
+				
+			</div>
+			
+			<div id="rss-error" class="alert alert-warning">
+				<a href="#" class="close" data-dismiss="alert">&times;</a>
+				Sorry, that link didn't seem to work. Please input a full URL of an RSS feed. 
+				
+			</div>
+			<div id="rss-success" class="alert alert-success">
+				
+			</div>
+
+    	</div>
+    <div class="container">
+    	<div id="rss-feeds">
+				
+		</div>
+	</div>
+	
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel"></h4>
+      </div>
+      <div class="modal-body" id="modalNone">
+      	<span class="txterror">No SpoilBait titles yet!</span>
+      </div>
+      <div class="modal-body" id="modalBody">
+      </div>
+      <div class="modal-body" id="modalSubmit">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+	
+    </body>
+    <script type="text/javascript" src="{% static 'crowdedits/js/crowdedits.js' %}"></script>
+
+</html>
