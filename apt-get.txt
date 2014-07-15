@@ -1,0 +1,9 @@
+htop
+python-dev
+git
+pip
+libmysqlclient-dev
+apache2
+libapache2-mod-wsgi
+mysql-client
+zip
