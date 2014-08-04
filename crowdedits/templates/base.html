@@ -1,0 +1,53 @@
+{% load i18n %}
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap.css' %}" />
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap-responsive.css' %}" />
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+		
+		<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="{% static 'crowdedits/js/jquery.cookie.js' %}"></script>
+    	<script src="{% static 'crowdedits/js/jquery.rss.js' %}"></script>
+    	<script src="{% static 'crowdedits/js/bootstrap.js' %}"></script>
+    
+    <title>{% block title %}User test{% endblock %}</title>
+</head>
+
+<body>
+	
+	
+	
+	
+<div class="navbar navbar-fixed-top">
+	<div class="navbar-inner nav-bg">
+    <div class="container-fluid">
+    {% block header %}
+    <a class="brand" href="{% url 'index' %}">{% trans "Home" %}</a>
+
+    {% if user.is_authenticated %}
+        {% trans "Logged in" %}: {{ user.username }} 
+        (<a class="brand" href="{% url 'auth_logout' %}">{% trans "Log out" %}</a>
+        <a class="brand" href="{% url 'auth_password_change' %}">{% trans "Change password" %}</a>)
+    {% else %}
+       <a class="brand" href="{% url 'auth_login' %}">{% trans "Log in" %}</a>
+    {% endif %}
+    <BR />
+    <hr />
+    {% endblock %}
+    </div>
+
+    <div id="content" style="padding-left: 40px;">
+    {% block content %}{% endblock %}
+    </div>
+
+    <div id="footer">
+    {% block footer %}
+        <hr />
+    {% endblock %}
+    </div>
+</body>
+
+</html>

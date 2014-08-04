@@ -7,4 +7,5 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^', include('crowdedits.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    (r'^accounts/', include('registration.backends.simple.urls')),
 )

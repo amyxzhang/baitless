@@ -4,7 +4,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title id="page_title"> SpoilBait </title>
+        <title id="page_title"> Baitless </title>
 		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/style.css' %}" />
 		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap.css' %}" />
 		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap-responsive.css' %}" />
@@ -19,8 +19,25 @@
     </head>
 
     <body>
+
+      <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner nav-bg">
+                <div class="container-fluid">
+                    <a class="brand" href="/"> 
+                        Baitless
+                    </a> 
+                        {% if user.is_authenticated %}
+                          <a class="brand" href="/accounts/logout">Logout</a>
+                          <a class="brand" href="/users/{{user.username}}">My Activity</a>
+                       {% else %}
+                       	  <a class="brand" href="/accounts/login">Login</a> 
+                          <a class="brand" href="/accounts/register">Register</a>
+                       {% endif %}
+                    </div></div></div>
+                    
     	<div class="container-narrow">
 			<div id="title">
+				<BR /><BR />
 				<h1>Baitless</h1>
 				<P>
 					<h4>Unite against clickbait titles!</h4>
@@ -30,7 +47,7 @@
 			<div class="row-fluid">
 				Choose any RSS feed of your choice and enter its URL below. 
 				Receive a link to a new RSS feed 
-				with new titles that actually clearly reflect the content of the link and "spoil the bait"!
+				with new titles that actually clearly reflect the content of the link and get rid of the clickbait!
 				In return, help yourself and others out by suggesting better titles for your favorite feeds and upvoting the best.
 				<P>
 					<form id="formfilters" class="form-horizontal">
@@ -77,7 +94,7 @@
         <h4 class="modal-title" id="myModalLabel"></h4>
       </div>
       <div class="modal-body" id="modalNone">
-      	<span class="txterror">No SpoilBait titles yet!</span>
+      	<span class="txterror">No Baitless titles yet!</span>
       </div>
       <div class="modal-body" id="modalBody">
       </div>

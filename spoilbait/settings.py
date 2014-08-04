@@ -37,7 +37,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'south',
-    'crowdedits'
+    'crowdedits',
+    'registration'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -53,6 +54,7 @@ ROOT_URLCONF = 'spoilbait.urls'
 
 WSGI_APPLICATION = 'spoilbait.wsgi.application'
 
+LOGIN_URL = '/accounts/login/?next=/accounts/profile'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -63,7 +65,8 @@ try:
 except IOError:
     print "Unable to open configuration file!"
 
-MYSQL = MYSQL_PROD
+MYSQL = MYSQL_LOCAL
+#MYSQL = MYSQL_PROD
 
 DATABASES = {
     'default': {
@@ -90,7 +93,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/

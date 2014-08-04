@@ -1,0 +1,73 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title id="page_title"> Baitless </title>
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/style.css' %}" />
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap.css' %}" />
+		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap-responsive.css' %}" />
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+		
+		<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="{% static 'crowdedits/js/jquery.cookie.js' %}"></script>
+    	<script src="{% static 'crowdedits/js/jquery.rss.js' %}"></script>
+    	<script src="{% static 'crowdedits/js/bootstrap.js' %}"></script>
+    
+
+    </head>
+
+    <body>
+
+      <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner nav-bg">
+                <div class="container-fluid">
+                    <a class="brand" href="/"> 
+                        Baitless
+                    </a> 
+                        {% if user.is_authenticated %}
+                          <a class="brand" href="/accounts/logout">Logout</a>
+                          <a class="brand" href="/users/{{user.username}}">My Activity</a>
+                       {% else %}
+                       	  <a class="brand" href="/accounts/login">Login</a> 
+                          <a class="brand" href="/accounts/register">Register</a>
+                       {% endif %}
+                    </div></div></div>
+                    
+    <div style="padding-left:40px;">
+    	<BR />
+    	<BR />
+    	<h3>{{ user.username }}</h3>
+    	<P>
+    		<h4>My Baitless Titles</h4>
+    		{% if titles %}
+	    		{% for title in titles %}
+	    			{{ title.crowdtitle }} | <a href="/page?url={{ title.article.url }}">Article Link</a> | Votes: {{ title.votes }} | {{ title.datetime_published }}
+	    			<BR />
+	    		{% endfor %}
+	    	{% else %}
+	    		No titles.
+    		{% endif %}
+    	</P>
+    	<BR />
+    	<P>
+    		<h4>My Baitless Votes</h4>
+    		{% if upvotes %}
+	    		{% for upvote in upvotes %}
+	    			{% if upvote.up == True %}
+	    				Upvote | Baitless Title: {{ upvote.crowdtitle.crowdtitle }} | <a href="/page?url={{ upvote.crowdtitle.article.url }}">Article Link</a> | Votes: {{ upvote.crowdtitle.votes }} | {{ upvote.datetime_published }}
+	    			{% else %}
+	    				Downvote | Baitless Title: {{ upvote.crowdtitle.crowdtitle }} | <a href="/page?url={{ upvote.crowdtitle.article.url }}">Article Link</a> | Votes: {{ upvote.crowdtitle.votes }} | {{ upvote.datetime_published }}
+	    			{% endif %}
+	    			<BR />
+	    		{% endfor %}
+	    	{% else %}
+	    		No votes.
+    		{% endif %}
+    	</P>
+    	
+    </div>
+                    
+</body>
+</html>

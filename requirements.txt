@@ -13,3 +13,4 @@ python-dateutil==2.2
 requests==2.3.0
 six==1.7.2
 wsgiref==0.1.2
+django-registration==1.0

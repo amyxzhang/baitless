@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Count
+from django.utils.safestring import mark_safe
 import urllib2
 import feedparser
 import datetime
@@ -11,9 +12,27 @@ import StringIO
 import requests
 import json
 from log import logger
-from crowdedits.models import RSSAnalytics, RSSFeed, Article, CrowdTitle, ArticleAnalytics
+from crowdedits.models import RSSAnalytics, RSSFeed, Article, CrowdTitle, ArticleAnalytics, Vote
 import urllib
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 
+
+def profile_user(request):
+    return profile(request, username=request.user.username)
+
+def profile(request, username=None):
+    if request.user.is_authenticated():
+        titles = CrowdTitle.objects.filter(user=request.user).order_by('-datetime_published')
+        upvotes = Vote.objects.filter(user=request.user).order_by('-datetime_published')
+        
+        dic = {'titles': titles,
+               'upvotes': upvotes,
+               'user': request.user}
+        
+        return render(request, 'crowdedits/profile.html', dic)
+    else:
+        return redirect_to_login(None)
 
 def get_redirects(url):
     #redirects are super slow...hack to fix for feedproxy (specifically upworthy, find others as we go
@@ -30,7 +49,8 @@ def get_redirects(url):
 @ensure_csrf_cookie
 def index(request):
     top_feeds = RSSFeed.objects.annotate(num_titles=Count('article__crowdtitle')).order_by('-num_titles')[:5]
-    dic = {'top_feeds': top_feeds}
+    dic = {'top_feeds': top_feeds,
+           'user': request.user}
     
     return render(request, 'crowdedits/index.html', dic)
 
@@ -42,69 +62,112 @@ def about(request):
 def feed_page(request):
     params = request.GET
     url = get_redirects(params['url'])
-    dic = {'url': url}
+    dic = {'url': mark_safe(url)}
     
     sm_url = url.split('?')[0]
     
     arts = Article.objects.filter(url=sm_url)
-    dic['header'] = 'No SpoilBait titles yet!'
+    dic['header'] = 'No Baitless titles yet!'
     if arts.count() > 0:
         art = arts[0]
-        crowdtitles = CrowdTitle.objects.filter(article=art).order_by('-votes')
+        crowdtitles = CrowdTitle.objects.filter(article=art).select_related().order_by('-votes')
         if crowdtitles.count() > 0:
             for title in crowdtitles:
                 title.escaped_crowdtitle = urllib.quote(title.crowdtitle)
+                votes = Vote.objects.filter(crowdtitle=title, user=request.user)
+                if votes:
+                    if votes[0].up:
+                        title.upvoted = True
+                        title.downvoted = False
+                    else:
+                        title.downvoted = True
+                        title.upvoted = False
+                else:
+                    title.upvoted = False
+                    title.downvoted = False
             dic['crowdtitles'] = crowdtitles
-            dic['header'] = 'Top SpoilBait titles:'
+            dic['header'] = 'Top Baitless titles:'
     else:
         dic['crowdtitles'] = []
             
     return render(request, 'crowdedits/feed_page.html', dic)
     
+@login_required
 def upvote(request):
     params = json.loads(request.body)
+    up = params['up']
     art_url = get_redirects(params['art_url'])
     sm_url = art_url.split('?')[0]
     crowd_title = params['crowd_title'].strip()
     a = Article.objects.get(url=sm_url)
     title = CrowdTitle.objects.get(article=a, crowdtitle=crowd_title)
-    title.votes += 1
-    title.save()
+    
+        
+    votes = Vote.objects.filter(crowdtitle=title, user=request.user)
+    if not votes:
+        v,_ = Vote.objects.get_or_create(crowdtitle=title, up=up, user=request.user, datetime_published=datetime.datetime.now())
 
+        if up:
+            title.votes += 1
+        else:
+            title.votes -= 1   
+        title.save()
+    else:
+        vote = votes[0]
+        if vote.up != up:
+            vote.up = up
+            vote.datetime_published=datetime.datetime.now()
+            vote.save()
+            if up:
+                title.votes += 2
+            else:
+                title.votes -= 2
+            title.save()
 
     return HttpResponse(json.dumps({'success': 1}))
 
-
+@login_required
 def write_title(request):
-    params = json.loads(request.body)
-    art_url = get_redirects(params['art_url'])
-    crowd_title = params['crowd_title']
-    if params.get('feed_url'):
-        feed_url = get_redirects(params.get('feed_url'))
-    else:
-        feed_url = None
-    
-    
-    sm_art_url = art_url.split('?')[0]
-    
-    if feed_url:
-        art_title = params['art_title']
-        date = parse(params['date'])
-        
-        
-        sm_feed_url = feed_url.split('?')[0]
-        
-        art = Article.objects.filter(url=sm_art_url)
-        if art.count() == 0:
-            rss_feed, _ = RSSFeed.objects.get_or_create(url=sm_feed_url)
-            article = Article.objects.create(url=sm_art_url, rss_feed=rss_feed, title=art_title, datetime_published=date)
+    try:
+        params = json.loads(request.body)
+        art_url = get_redirects(params['art_url'])
+        crowd_title = params['crowd_title']
+        if params.get('feed_url'):
+            feed_url = get_redirects(params.get('feed_url'))
         else:
-            article = art[0]
-        crowd_title, _ = CrowdTitle.objects.get_or_create(article=article, crowdtitle=crowd_title, votes=1)
-    else:
-        art = Article.objects.filter(url=sm_art_url)[0]
-        crowd_title, _ = CrowdTitle.objects.get_or_create(article=art, crowdtitle=crowd_title, votes=1)
-
+            feed_url = None
+        
+        
+        sm_art_url = art_url.split('?')[0]
+        
+        if feed_url:
+            art_title = params['art_title']
+            date = parse(params['date'])
+            
+            
+            sm_feed_url = feed_url.split('?')[0]
+            
+            art = Article.objects.filter(url=sm_art_url)
+            if art.count() == 0:
+                rss_feed, _ = RSSFeed.objects.get_or_create(url=sm_feed_url)
+                article = Article.objects.create(url=sm_art_url, rss_feed=rss_feed, title=art_title, datetime_published=date)
+            else:
+                article = art[0]
+            crowd_title, _ = CrowdTitle.objects.get_or_create(article=article, 
+                                                              crowdtitle=crowd_title, 
+                                                              votes=0, 
+                                                              user=request.user, 
+                                                              datetime_published=datetime.datetime.now())
+        else:
+            logger.info(sm_art_url)
+            art = Article.objects.filter(url=sm_art_url)[0]
+            crowd_title, _ = CrowdTitle.objects.get_or_create(article=art, 
+                                                              crowdtitle=crowd_title, 
+                                                              votes=0, 
+                                                              user=request.user,
+                                                              datetime_published=datetime.datetime.now())
+    except Exception, e:
+        logger.exception(e)
 
     return HttpResponse(json.dumps({'success': 1}))
 
@@ -168,10 +231,24 @@ def get_crowd_data(request):
             article = articles[0]
             crowd_titles = CrowdTitle.objects.filter(article=article).order_by('-votes')
             for title in crowd_titles:
+                votes = Vote.objects.filter(crowdtitle=title, user=request.user)
+                if votes:
+                    if votes[0].up:
+                        upvoted = True
+                        downvoted = False
+                    else:
+                        downvoted = True
+                        upvoted = False
+                else:
+                    upvoted = False
+                    downvoted = False
+
                 rss_items[item['title']]['crowd_titles'].append({'title': title.crowdtitle,
-                                                                 'votes': title.votes})
+                                                                 'votes': title.votes,
+                                                                 'upvoted': upvoted,
+                                                                 'downvoted': downvoted})
+
                 
-    
     data = {'results': rss_items}
     return HttpResponse(json.dumps(data), content_type='json')
     
@@ -217,7 +294,7 @@ def feed(request):
         if a.count() > 0:
             crowd_titles = CrowdTitle.objects.filter(article=a[0]).order_by('-votes')
             if crowd_titles.count() != 0:
-                item['title'] = '%s (Spoilbait Title)' % crowd_titles[0].crowdtitle
+                item['title'] = '%s (Baitless Title)' % crowd_titles[0].crowdtitle
         item2 = PyRSS2Gen.RSSItem(
             title = item['title'],
             link = 'http://spoilbait.csail.mit.edu/page?url=' + item['link'],

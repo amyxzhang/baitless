@@ -1,6 +1,6 @@
 
-//localhost = '127.0.0.1:8000';
-localhost = 'spoilbait.csail.mit.edu';
+localhost = '127.0.0.1:8000';
+//localhost = 'spoilbait.csail.mit.edu';
 
 var articles;
 var index_articles = [];
@@ -47,7 +47,7 @@ function submit_feed(url) {
 	$('#rss-feed-url').val(url);
 	$("#rss-info").hide();
 	$('#rss-feeds').empty();
-	url_call = 'http://' + localhost + '/crowd_data';
+	url_call = '/crowd_data';
 	
 	$.ajax({
 	    type: "GET",
@@ -90,7 +90,28 @@ function populate_modal(index, url, feed_url, date) {
 			for (var i = 0; i < crowd_res['crowd_titles'].length; i++) {
 				var ids = 'title' + i + '_' + index;
 				text += '<BR/>' + crowd_res['crowd_titles'][i]['title'] + ' &nbsp;&nbsp;';
-				text += '<a class="upvote" onClick="upvote(\'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(title) + '\', ' + i + ');"><img width=10 height=10 src="http://i.imgur.com/YtoI3.jpg"></a> &nbsp;&nbsp;';
+				
+       			if (crowd_res['crowd_titles'][i]['upvoted'] == false) {
+					text += '&nbsp;&nbsp;' +
+					'<span id="arrows-upm' + ids + '">';
+					text += '<a class="upvote" onClick="upvote(true, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(title) + '\', ' + i + ');">' +
+					'<img class="arrow" src="/static/crowdedits/img/arrow-up.png"></a></span> &nbsp;&nbsp;';
+				} else {
+					text += '&nbsp;&nbsp;' +
+					'<span id="arrows-upm' + ids + '">' +
+					'<img class="arrow" src="/static/crowdedits/img/arrow-up-orange.png"></span> &nbsp;&nbsp;';
+				}
+				if (crowd_res['crowd_titles'][i]['downvoted'] == false) {
+					text += '&nbsp;&nbsp;' +
+					'<span id="arrows-downm' + ids + '">';
+					text += '<a class="upvote" onClick="upvote(false, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(title) + '\', ' + i + ');">' +
+					'<img class="arrow" src="/static/crowdedits/img/arrow-down.png"></a></span> &nbsp;&nbsp;';
+				} else {
+					text += '&nbsp;&nbsp;' +
+					'<span id="arrows-downm' + ids + '">' +
+					'<img class="arrow" src="/static/crowdedits/img/arrow-down-orange.png"></span> &nbsp;&nbsp;';
+				}
+				
         		text += '<span id="m' + ids + '">' + crowd_res['crowd_titles'][i]['votes'] + '</span>'; 	
 			}
 			text += '</span>';
@@ -118,7 +139,7 @@ function populate_modal(index, url, feed_url, date) {
 		data['date'] = date;
 		
 		$.ajax({
-	        url: "http://" + localhost + "/write_title",
+	        url: "/write_title",
 	        type: 'POST',
 	        data: JSON.stringify(data),
 	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -129,16 +150,27 @@ function populate_modal(index, url, feed_url, date) {
 	        	$('#submit-title').val('');
 	        	crowd_res = articles[title];
 	        	var id = crowd_res['crowd_titles'].length;
-	        	crowd_res['crowd_titles'].push({'votes': 1, 'title': crowd_title});
+	        	crowd_res['crowd_titles'].push({'votes': 0, 'title': crowd_title, 'upvoted': false, 'downvoted': false});
 	        	
 	        	ids = 'title' + id + '_' + index;
 	        	var text = '<BR /> ' + crowd_title + ' &nbsp;&nbsp;';
-	        	text += '<a class="upvote" onClick="upvote(\'' + escape(crowd_title) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(title) + '\', ' + i + ');"><img width=10 height=10 src="http://i.imgur.com/YtoI3.jpg"></a> &nbsp;&nbsp;';
-        		text += '<span id="m' + ids + '">1</span>'; 
+	        	text += '<span id="arrows-upm' + ids + '">';
+	        	text += '<a class="upvote" onClick="upvote(true, \'' + escape(crowd_title) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(title) + '\', ' + id + ');">' +
+	        	'<img class="arrow" src="/static/crowdedits/img/arrow-up.png"></a></span> &nbsp;&nbsp;';
+	        	text += '<span id="arrows-downm' + ids + '">';
+	        	text += '<a class="upvote" onClick="upvote(false, \'' + escape(crowd_title) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(title) + '\', ' + id + ');">' +
+	        	'<img class="arrow" src="/static/crowdedits/img/arrow-down.png"></a></span> &nbsp;&nbsp;';
+        		text += '<span id="m' + ids + '">0</span>'; 
         		$('#modalcrowd').append(text);
         		redraw(index, title, url);
 	        },
+	        statusCode: {
+		    	404: function() {
+		    		window.location.href = "/accounts/login";
+		    	}
+		    },
 			error: function(jqXHR, textStatus, errorThrown) {
+				window.location.href = "/accounts/login";
 			  	console.log(textStatus, errorThrown);
 			}
 	     });
@@ -154,12 +186,33 @@ function redraw(index, original_title, url) {
 	for (var i = 0; i < crowd_res['crowd_titles'].length; i++) {
 		var ids = 'title' + i + '_' + index;
 		text += '<BR />' + crowd_res['crowd_titles'][i]['title'] + ' &nbsp;&nbsp;';
-		text += '&nbsp;&nbsp;<a class="upvote" onClick="upvote(\'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(original_title) + '\', ' + i + ');"><img width=10 height=10 src="http://i.imgur.com/YtoI3.jpg"></a> &nbsp;&nbsp;';
+		
+		if (crowd_res['crowd_titles'][i]['upvoted'] == false) {
+			title += '&nbsp;&nbsp;' +
+			'<span id="arrows-up' + ids + '">' +
+			'<a class="upvote" onClick="upvote(true, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(original_title) + '\', ' + i + ');">' +
+			'<img class="arrow" src="/static/crowdedits/img/arrow-up.png"></a></span> &nbsp;&nbsp;';
+		} else {
+			title += '&nbsp;&nbsp;' +
+			'<span id="arrows-up' + ids + '">' +
+			'<img class="arrow" src="/static/crowdedits/img/arrow-up-orange.png"></span> &nbsp;&nbsp;';
+		}
+		if (crowd_res['crowd_titles'][i]['downvoted'] == false) {
+			title += '&nbsp;&nbsp;' +
+			'<span id="arrows-down' + ids + '">' +
+			'<a class="upvote" onClick="upvote(false, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(original_title) + '\', ' + i + ');">' +
+			'<img class="arrow" src="/static/crowdedits/img/arrow-down.png"></a></span> &nbsp;&nbsp;';
+		} else {
+			title += '&nbsp;&nbsp;' +
+			'<span id="arrows-down' + ids + '">' +
+			'<img class="arrow" src="/static/crowdedits/img/arrow-down-orange.png"></span> &nbsp;&nbsp;';
+		}
+		
 		text += '<span id="' + ids + '">' + crowd_res['crowd_titles'][i]['votes'] + '</span>'; 
 	}
 	$('#crowdtitles' + index).html(text);
 	if (crowd_res['crowd_titles'].length == 1) {
-		var addNewSpan = '<span class="txtbright">SpoilBait Titles:</span>';
+		var addNewSpan = '<span class="txtbright">Baitless Titles:</span>';
    		$('#crowdtitles' + index).before(addNewSpan);
 	}
 	$('#otitle' + index).removeClass('rss-new-title');
@@ -176,7 +229,7 @@ function send_analytics(feed_url, title, date, page_url) {
 	data = JSON.stringify(data);
 	
 	$.ajax({
-        url: "http://" + localhost + "/page_analytics",
+        url: "/page_analytics",
         type: 'POST',
         data: data,
         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -192,31 +245,73 @@ function send_analytics(feed_url, title, date, page_url) {
 }
 
 
-function upvote(crowd_title, page_url, ids, art_title, i) {
+function upvote(up, crowd_title, page_url, ids, art_title, i) {
 	data = {};
 	crowd_title = unescape(crowd_title);
 	art_title = unescape(art_title);
 	data['crowd_title'] = crowd_title;
 	data['art_url'] = page_url;
 	data['csrfmiddlewaretoken'] = csrftoken;
+	data['up'] = up;
 	data = JSON.stringify(data);
 	
 	$.ajax({
-        url: "http://" + localhost + "/upvote",
+        url: "/upvote",
         type: 'POST',
         data: data,
         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
         dataType: 'json',
         success: function() {
-        	var votes = parseInt($('#' + ids).text()) + 1;
+        	crowd_res = articles[art_title];
+        	
+        	console.log(crowd_res['crowd_titles'][i]);
+        	if (up == true) {
+        		if (crowd_res['crowd_titles'][i]['downvoted'] == true) {
+        			$('#arrows-down' + ids).html('<a class="upvote" onClick="upvote(false, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + page_url + '\',\'' + ids + '\',\'' + art_title + '\', ' + i + ');">' +
+	        						'<img class="arrow" src="/static/crowdedits/img/arrow-down.png"></a>');
+        			$('#arrows-downm' + ids).html('<a class="upvote" onClick="upvote(true, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + page_url + '\',\'' + ids + '\',\'' + art_title + '\', ' + i + ');">' +
+	        						'<img class="arrow" src="/static/crowdedits/img/arrow-down.png"></a>');
+        			crowd_res['crowd_titles'][i]['votes'] += 2;
+        			var votes = parseInt($('#' + ids).text()) + 2;
+        		} else {
+        			crowd_res['crowd_titles'][i]['votes'] += 1;
+        			var votes = parseInt($('#' + ids).text()) + 1;
+        		}
+        		crowd_res['crowd_titles'][i]['downvoted'] = false;
+        		crowd_res['crowd_titles'][i]['upvoted'] = true;
+        		$('#arrows-up' + ids).html('<img class="arrow" src="/static/crowdedits/img/arrow-up-orange.png">');
+        		$('#arrows-upm' + ids).html('<img class="arrow" src="/static/crowdedits/img/arrow-up-orange.png">');
+        	} else {
+        		if (crowd_res['crowd_titles'][i]['upvoted'] == true) {
+        			$('#arrows-up' + ids).html('<a class="upvote" onClick="upvote(true, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + page_url + '\',\'' + ids + '\',\'' + art_title + '\', ' + i + ');">' +
+	        						'<img class="arrow" src="/static/crowdedits/img/arrow-up.png"></a>');
+        			$('#arrows-upm' + ids).html('<a class="upvote" onClick="upvote(true, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + page_url + '\',\'' + ids + '\',\'' + art_title + '\', ' + i + ');">' +
+	        						'<img class="arrow" src="/static/crowdedits/img/arrow-up.png"></a>');
+        			crowd_res['crowd_titles'][i]['votes'] -= 2;
+        			var votes = parseInt($('#' + ids).text()) - 2;
+        		} else {
+        			crowd_res['crowd_titles'][i]['votes'] -= 1;
+        			var votes = parseInt($('#' + ids).text()) - 1;
+        		}
+        		crowd_res['crowd_titles'][i]['downvoted'] = true;
+        		crowd_res['crowd_titles'][i]['upvoted'] = false;
+        		$('#arrows-down' + ids).html('<img class="arrow" src="/static/crowdedits/img/arrow-down-orange.png">');
+        		$('#arrows-downm' + ids).html('<img class="arrow" src="/static/crowdedits/img/arrow-down-orange.png">');
+        	}
+
         	$('#' + ids).html(votes);
         	$('#m' + ids).html(votes);
-        	crowd_res = articles[art_title];
-        	crowd_res['crowd_titles'][i]['votes'] += 1;
+        	
         	
         },
+        statusCode: {
+        	404: function() {
+        		window.location.href = "/accounts/login";
+        	}
+        },
 		error: function(jqXHR, textStatus, errorThrown) {
-		  	console.log(textStatus, errorThrown);
+			window.location.href = "/accounts/login";
+		  	console.log(jqXHR, textStatus, errorThrown);
 		}
      });
 	return false;
@@ -236,7 +331,7 @@ function populate_feed_view(url, data) {
         	'<div class="right-text">' + 
         	'{fixed-title} <BR />' +
         	'{date}<BR/>{shortBodyPlain} <BR />' + 
-        	'<button class="btn btn2" data-toggle="modal" data-target="#myModal" onClick="populate_modal({index}, \'{url}\', \'' + url + '\', \'{date}\');">Contribute or Vote on SpoilBait Titles</button>' +
+        	'<button class="btn btn2" data-toggle="modal" data-target="#myModal" onClick="populate_modal({index}, \'{url}\', \'' + url + '\', \'{date}\');">Contribute or Vote on Baitless Titles</button>' +
         	'</div></div>',
         	tokens: {
         		'fixed-title': function(entry, tokens) {
@@ -246,23 +341,43 @@ function populate_feed_view(url, data) {
         				crowd_res = articles[entry.title];
         				if (crowd_res['crowd_titles'].length == 0) {
         					
-        					title = '<a target="_blank" onClick="send_analytics(\'' + url + '\',\'' + escape(entry.title) + '\',\'' + tokens.date + '\',\'' + tokens.url + '\');" href="http://' + localhost+ '/page?url=' + tokens.url + '">';
+        					title = '<a target="_blank" onClick="send_analytics(\'' + url + '\',\'' + escape(entry.title) + '\',\'' + tokens.date + '\',\'' + tokens.url + '\');" href="/page?url=' + tokens.url + '">';
         					title += '<span class="rss-new-title" id="otitle' + tokens.index + '">' + entry.title + '</span></a> ';
-        					title += '<BR /> <span class="crowdtitles" id="crowdtitles' + tokens.index + '"><span class="txterror">No SpoilBait titles yet!</span></span>';
+        					title += '<BR /> <span class="crowdtitles" id="crowdtitles' + tokens.index + '"><span class="txterror">No Baitless titles yet!</span></span>';
         				} else {
-        					title = '<a target="_blank" onClick="send_analytics(\'' + url + '\',\'' + escape(entry.title) + '\',\'' + tokens.date + '\',\'' + tokens.url + '\');" href="http://' + localhost+ '/page?url=' + tokens.url + '">';
+        					title = '<a target="_blank" onClick="send_analytics(\'' + url + '\',\'' + escape(entry.title) + '\',\'' + tokens.date + '\',\'' + tokens.url + '\');" href="/page?url=' + tokens.url + '">';
         					title += '<span class="rss-new-title-strikeout" id="otitle' + tokens.index + '">' + entry.title + '</a> ';
-        					title += '<BR /><span class="txtbright">SpoilBait Titles:</span><span class="crowdtitles" id="crowdtitles' + tokens.index + '">';
+        					title += '<BR /><span class="txtbright">Baitless Titles:</span><span class="crowdtitles" id="crowdtitles' + tokens.index + '">';
         					for (var i = 0; i < crowd_res['crowd_titles'].length; i++) {
         						var ids = 'title' + i + '_' + tokens.index;
         						title += '<BR />' + crowd_res['crowd_titles'][i]['title'] + ' &nbsp;&nbsp;';
-        						title += '&nbsp;&nbsp;<a class="upvote" onClick="upvote(\'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + tokens.url + '\',\'' + ids + '\',\'' + escape(entry.title) + '\', ' + i + ');"><img width=10 height=10 src="http://i.imgur.com/YtoI3.jpg"></a> &nbsp;&nbsp;';
+        						
+        						if (crowd_res['crowd_titles'][i]['upvoted'] == false) {
+	        						title += '&nbsp;&nbsp;' +
+	        						'<span id="arrows-up' + ids + '">' +
+	        						'<a class="upvote" onClick="upvote(true, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + tokens.url + '\',\'' + ids + '\',\'' + escape(entry.title) + '\', ' + i + ');">' +
+	        						'<img class="arrow" src="/static/crowdedits/img/arrow-up.png"></a></span> &nbsp;&nbsp;';
+	        					} else {
+	        						title += '&nbsp;&nbsp;' +
+	        						'<span id="arrows-up' + ids + '">' +
+	        						'<img class="arrow" src="/static/crowdedits/img/arrow-up-orange.png"></span> &nbsp;&nbsp;';
+	        					}
+	        					if (crowd_res['crowd_titles'][i]['downvoted'] == false) {
+	        						title += '&nbsp;&nbsp;' +
+	        						'<span id="arrows-down' + ids + '">' +
+	        						'<a class="upvote" onClick="upvote(false, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + tokens.url + '\',\'' + ids + '\',\'' + escape(entry.title) + '\', ' + i + ');">' +
+	        						'<img class="arrow" src="/static/crowdedits/img/arrow-down.png"></a></span> &nbsp;&nbsp;';
+	        					} else {
+	        						title += '&nbsp;&nbsp;' +
+	        						'<span id="arrows-down' + ids + '">' +
+	        						'<img class="arrow" src="/static/crowdedits/img/arrow-down-orange.png"></span> &nbsp;&nbsp;';
+	        					}
         						title += '<span id="' + ids + '">' + parseInt(crowd_res['crowd_titles'][i]['votes']) + '</span>'; 
         					}
         					title += '</span>';
         				}
         			} else {
-        					title = '<a target="_blank" onClick="send_analytics(\'' + url + '\',\'' + escape(entry.title) + '\',\'' + tokens.date + '\',\'' + tokens.url + '\');" href="http://' + localhost+ '/page?url=' + tokens.url + '">';
+        					title = '<a target="_blank" onClick="send_analytics(\'' + url + '\',\'' + escape(entry.title) + '\',\'' + tokens.date + '\',\'' + tokens.url + '\');" href="/page?url=' + tokens.url + '">';
         					title += '<span class="rss-new-title" id="otitle' + tokens.index + '">' + entry.title + '</span></a> ';
         					title += '<BR /> <span class="crowdtitles" id="crowdtitles' + tokens.index + '"><span class="txterror">No SpoilBait titles yet!</span></span>';
         					}
@@ -277,7 +392,7 @@ function populate_feed_view(url, data) {
         	},
         	success: function() {
         		$('#rss-error').hide();
-        		$('#rss-success').html('Here is a link to your SpoilBait RSS Feed: <BR /><a target="_blank" href="http://' + localhost + '/feeds?url=' + url + '">http://' + localhost + '/feeds?url=' + url + '</a>');
+        		$('#rss-success').html('Here is a link to your Baitless RSS Feed: <BR /><a target="_blank" href="/feeds?url=' + url + '">http://' + localhost + '/feeds?url=' + url + '</a>');
       			$("#rss-success").show();
       			$('#submit-rss-url').toggleClass('active');
         	},
