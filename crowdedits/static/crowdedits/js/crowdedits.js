@@ -128,9 +128,23 @@ function populate_modal(index, url, feed_url, date) {
 	
 	$('#modalSubmit').html(sub_title);
 	
+	$('#submit-title').keypress(function(e){
+	if (e.which == 13) {
+		var crowd_title = $("#submit-title").val();
+		submit_writetitle(crowd_title, index, url, feed_url, title, date);
+		return false;
+		}
+	});
 	
 	$('#submit-title-but').click(function(e) {
 		var crowd_title = $('#submit-title').val();
+		submit_writetitle(crowd_title, index, url, feed_url, title, date);
+		return false;
+	});
+	
+}
+
+function submit_writetitle(crowd_title, index, url, feed_url, title, date) {
 		var data = {};
 		data['crowd_title'] = crowd_title;
 		data['art_url'] = url;
@@ -148,11 +162,11 @@ function populate_modal(index, url, feed_url, date) {
 	        	$('#modalNone').hide();
 	        	$("#modalBody").show();
 	        	$('#submit-title').val('');
-	        	crowd_res = articles[title];
+	        	var crowd_res = articles[title];
 	        	var id = crowd_res['crowd_titles'].length;
 	        	crowd_res['crowd_titles'].push({'votes': 0, 'title': crowd_title, 'upvoted': false, 'downvoted': false});
 	        	
-	        	ids = 'title' + id + '_' + index;
+	        	var ids = 'title' + id + '_' + index;
 	        	var text = '<BR /> ' + crowd_title + ' &nbsp;&nbsp;';
 	        	text += '<span id="arrows-upm' + ids + '">';
 	        	text += '<a class="upvote" onClick="upvote(true, \'' + escape(crowd_title) + '\',\'' + url + '\',\'' + ids + '\',\'' + escape(title) + '\', ' + id + ');">' +
@@ -167,17 +181,16 @@ function populate_modal(index, url, feed_url, date) {
 	        statusCode: {
 		    	404: function() {
 		    		window.location.href = "/accounts/login";
-		    	}
+		    	},
+        		302: function() {
+        			window.location.href = "/accounts/login";
+        		}
 		    },
 			error: function(jqXHR, textStatus, errorThrown) {
 				window.location.href = "/accounts/login";
 			  	console.log(textStatus, errorThrown);
 			}
 	     });
-	     return false;
-		
-	});
-	
 }
 
 function redraw(index, original_title, url) {
@@ -263,8 +276,6 @@ function upvote(up, crowd_title, page_url, ids, art_title, i) {
         dataType: 'json',
         success: function() {
         	crowd_res = articles[art_title];
-        	
-        	console.log(crowd_res['crowd_titles'][i]);
         	if (up == true) {
         		if (crowd_res['crowd_titles'][i]['downvoted'] == true) {
         			$('#arrows-down' + ids).html('<a class="upvote" onClick="upvote(false, \'' + escape(crowd_res['crowd_titles'][i]['title']) + '\',\'' + page_url + '\',\'' + ids + '\',\'' + art_title + '\', ' + i + ');">' +
@@ -306,6 +317,9 @@ function upvote(up, crowd_title, page_url, ids, art_title, i) {
         },
         statusCode: {
         	404: function() {
+        		window.location.href = "/accounts/login";
+        	},
+        	302: function() {
         		window.location.href = "/accounts/login";
         	}
         },

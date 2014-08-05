@@ -4,7 +4,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title id="page_title"> SpoilBait </title>
+        <title id="page_title"> Baitless </title>
 		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/page_style.css' %}" />
 		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap.css' %}" />
 		<link rel="stylesheet" type="text/css" href="{% static 'crowdedits/css/bootstrap-responsive.css' %}" />
@@ -35,19 +35,34 @@
     				 <span id="title{{ forloop.counter0 }}">
     				<span id="crowdtitle{{ forloop.counter0 }}">
     				{{ title.crowdtitle }}
-    				</span>&nbsp;&nbsp;
-    				<a class="upvote" onClick="upvote('{{ title.escaped_crowdtitle }}','{{ forloop.counter0 }}');">
-    				<img width=10 height=10 src="http://i.imgur.com/YtoI3.jpg"></a>&nbsp;&nbsp;
-    				<span id="upvotes{{ forloop.counter0 }}">
+    				</span> &nbsp;&nbsp;
+    				<span id="arrows-upm{{ forloop.counter0 }}" class="hidden">
+    				{% if title.upvoted == True %}
+    					<img class="arrow" src="/static/crowdedits/img/arrow-up-orange.png"></span> &nbsp;&nbsp;
+    				{% else %}
+	    				<a class="upvote" onClick="upvote(true, '{{ title.escaped_crowdtitle }}','{{ forloop.counter0 }}');">
+	    				<img class="arrow" src="/static/crowdedits/img/arrow-up.png"></a></span> &nbsp;&nbsp;
+	    			{% endif %}
+	    			
+	    			<span id="arrows-downm{{ forloop.counter0 }}" class="hidden">
+	    			{% if title.downvoted == True %}
+	    				<img class="arrow" src="/static/crowdedits/img/arrow-down-orange.png"></span> &nbsp;&nbsp;
+	    			{% else %}
+	    				<a class="upvote" onClick="upvote(false, '{{ title.escaped_crowdtitle }}','{{ forloop.counter0 }}');">
+	    				<img class="arrow" src="/static/crowdedits/img/arrow-down.png"></a></span> &nbsp;&nbsp;
+	    			{% endif %}
+    				<span id="upvotes{{ forloop.counter0 }}" class="hidden">
     				{{ title.votes }}
     				</span>
     				</span>
     				<BR />
     				{% endfor %}
-    			</span>
+    			</div>
     		</td>
     		<td>
-    			<a href="http://spoilbait.csail.mit.edu">Get your own Baitless Feed</a>
+    			<a href="/">Get your own Baitless Feed</a>
+				<BR />
+				<a href="/accounts/profile">View your Profile Activity</a>
 				<BR />
     			<a href="{{ url }}">Close Baitless banner and go to article</a>
     			

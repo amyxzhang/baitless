@@ -74,17 +74,21 @@ def feed_page(request):
         if crowdtitles.count() > 0:
             for title in crowdtitles:
                 title.escaped_crowdtitle = urllib.quote(title.crowdtitle)
-                votes = Vote.objects.filter(crowdtitle=title, user=request.user)
-                if votes:
-                    if votes[0].up:
-                        title.upvoted = True
-                        title.downvoted = False
+                if request.user.is_authenticated():
+                    votes = Vote.objects.filter(crowdtitle=title, user=request.user)
+                    if votes:
+                        if votes[0].up:
+                            title.upvoted = True
+                            title.downvoted = False
+                        else:
+                            title.downvoted = True
+                            title.upvoted = False
                     else:
-                        title.downvoted = True
                         title.upvoted = False
+                        title.downvoted = False
                 else:
-                    title.upvoted = False
-                    title.downvoted = False
+                     title.upvoted = False
+                     title.downvoted = False
             dic['crowdtitles'] = crowdtitles
             dic['header'] = 'Top Baitless titles:'
     else:
@@ -231,14 +235,18 @@ def get_crowd_data(request):
             article = articles[0]
             crowd_titles = CrowdTitle.objects.filter(article=article).order_by('-votes')
             for title in crowd_titles:
-                votes = Vote.objects.filter(crowdtitle=title, user=request.user)
-                if votes:
-                    if votes[0].up:
-                        upvoted = True
-                        downvoted = False
+                if request.user.is_authenticated():
+                    votes = Vote.objects.filter(crowdtitle=title, user=request.user)
+                    if votes:
+                        if votes[0].up:
+                            upvoted = True
+                            downvoted = False
+                        else:
+                            downvoted = True
+                            upvoted = False
                     else:
-                        downvoted = True
                         upvoted = False
+                        downvoted = False
                 else:
                     upvoted = False
                     downvoted = False
