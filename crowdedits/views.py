@@ -188,6 +188,8 @@ def page_analytics(request):
     ip = request.META['REMOTE_ADDR']
     user_agent = request.META['HTTP_USER_AGENT']
     
+    user_agent = user_agent[0:50]
+    
     analytics = ArticleAnalytics.objects.filter(article__url=sm_page_url, ip_address=ip)
     if analytics.count() == 0:
         feed,_ = RSSFeed.objects.get_or_create(url=sm_feed_url)
@@ -276,6 +278,8 @@ def feed(request):
     
     ip = request.META['REMOTE_ADDR']
     user_agent = request.META['HTTP_USER_AGENT']
+    
+    user_agent = user_agent[0:50]
     
     sm_url = url.split('?')[0]
     rss_feed,_ = RSSFeed.objects.get_or_create(url=sm_url)
