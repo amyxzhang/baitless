@@ -309,7 +309,7 @@ def feed(request):
                 item['title'] = '%s (Baitless Title)' % crowd_titles[0].crowdtitle
         item2 = PyRSS2Gen.RSSItem(
             title = item['title'],
-            link = 'http://spoilbait.csail.mit.edu/page?url=' + item['link'],
+            link = 'http://baitless.csail.mit.edu/page?url=' + item['link'],
             description = item['summary'],
         )
         rss_items.append(item2)

@@ -1,6 +1,6 @@
 
 localhost = '127.0.0.1:8000';
-//localhost = 'spoilbait.csail.mit.edu';
+//localhost = 'baitless.csail.mit.edu';
 
 var articles;
 var index_articles = [];
@@ -123,7 +123,7 @@ function populate_modal(index, url, feed_url, date) {
 	$('#modalBody').html(text);
 	
 	sub_title = '<form class="form-horizontal">';
-	sub_title += '<div class="input-append"><input type="text" id="submit-title" class="input-block-level span3" placeholder="Submit A SpoilBait Title"><button class="btn btn-primary" type="submit" id="submit-title-but">Submit</button></div>';
+	sub_title += '<div class="input-append"><input type="text" id="submit-title" class="input-block-level span3" placeholder="Submit A Baitless Title"><button class="btn btn-primary" type="submit" id="submit-title-but">Submit</button></div>';
 	sub_title += '</form>';
 	
 	$('#modalSubmit').html(sub_title);

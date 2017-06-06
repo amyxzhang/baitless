@@ -1,6 +1,6 @@
 
 //localhost = '127.0.0.1:8000';
-//localhost = 'spoilbait.csail.mit.edu';
+localhost = 'baitless.csail.mit.edu';
 
 var articles = [];
 var csrftoken = $.cookie('csrftoken');
